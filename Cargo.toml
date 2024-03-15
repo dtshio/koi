@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+default-members = ["crates/client", "crates/server"]
+members = [ "crates/client", "crates/networking", "crates/server"]
+
+[workspace.dependencies]
+client = { path = "creates/client" }
+server = { path = "creates/server" }
+networking = { path = "crates/networking" }
