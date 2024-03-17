@@ -1,7 +1,7 @@
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::{io::{self, AsyncReadExt, AsyncWriteExt}, net::TcpStream};
 
-use crate::message::Message;
+use crate::packet::Packet;
 
 #[derive(Debug)]
 pub struct Connection {
@@ -15,17 +15,17 @@ impl From<TcpStream> for Connection {
 }
 
 impl Connection {
-    pub async fn send<E: Serialize>(&mut self, message: &Message<E>) -> io::Result<usize> {
-        match message.encode() {
-            Ok(message) => self.stream.write(&message).await,
+    pub async fn send<E: Serialize>(&mut self, packet: &Packet<E>) -> io::Result<usize> {
+        match packet.encode() {
+            Ok(packet) => self.stream.write(&packet).await,
             Err(error) => Err(io::Error::new(io::ErrorKind::InvalidInput, error))
         }
     }
 
-    pub async fn recv<T: DeserializeOwned>(&mut self, message: &mut [u8]) -> io::Result<Option<Message<T>>> {
-        match self.stream.read(message).await {
+    pub async fn recv<T: DeserializeOwned>(&mut self, packet: &mut [u8]) -> io::Result<Option<Packet<T>>> {
+        match self.stream.read(packet).await {
             Ok(0) => Ok(None),
-            Ok(bytes_read) => Message::<T>::decode(&message[..bytes_read]).map_or(Err(io::Error::new(io::ErrorKind::InvalidData, "Failed to decode message")), |message| Ok(Some(message))),
+            Ok(bytes_read) => Packet::<T>::decode(&packet[..bytes_read]).map_or(Err(io::Error::new(io::ErrorKind::InvalidData, "Failed to decode message")), |message| Ok(Some(message))),
             Err(error) => Err(io::Error::new(io::ErrorKind::InvalidInput, error))
         }
     }

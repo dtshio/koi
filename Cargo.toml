@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 default-members = ["crates/client", "crates/server"]
-members = [ "crates/client", "crates/networking", "crates/server"]
+members = [ "crates/client", "crates/networking", "crates/protocol", "crates/server"]
 
 [workspace.dependencies]
 client = { path = "creates/client" }

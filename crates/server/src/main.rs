@@ -1,7 +1,29 @@
+use std::sync::Arc;
+
 use networking::connection::Connection;
-use networking::message::Message;
+use networking::packet::Packet;
+
+use protocol::message_handler::ServerMessageHandler;
+use protocol::message_type::MessageType;
 
 use tokio::net::TcpListener;
+
+struct Handler;
+
+impl ServerMessageHandler<Connection> for Handler {
+    async fn handle_connection(&self, mut connection: Connection, address: String) {
+        println!("\r\nconnection :: {}", address);
+
+        let packet = Packet::<MessageType> { 
+            contents: MessageType::Event(String::from("hello"))
+        };
+
+        match connection.send(&packet).await {
+            Ok(bytes_written) => println!("connection => write {:?} bytes to {}", bytes_written, address),
+            Err(error) => eprintln!("connection => failed to write to {}: {:?}", address, error)
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() {
@@ -9,17 +31,15 @@ async fn main() {
         .await
         .expect("Failed to bind at port {}");
     
+    let handler = Arc::from(Handler);
+    
     while let Ok((stream, address)) = listener.accept().await {
+        let handler = handler.clone();
+        
         tokio::spawn(async move {
-            let mut connection = Connection::from(stream);
-            let message = Message::<String> { 
-                payload: String::from("hello")
-            };
+            let connection = Connection::from(stream);
 
-            match connection.send(&message).await {
-                Ok(bytes_written) => println!("Write {:?} bytes to {}", bytes_written, address),
-                Err(error) => eprintln!("Failed to write to {}: {:?}", address, error)
-           }
+            handler.handle_connection(connection, address.to_string()).await;
         });
     }
 }

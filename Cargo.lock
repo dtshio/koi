@@ -67,6 +67,7 @@ name = "client"
 version = "0.1.0"
 dependencies = [
  "networking",
+ "protocol",
  "tokio",
 ]
 
@@ -174,6 +175,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "protocol"
+version = "0.1.0"
+dependencies = [
+ "networking",
+ "serde",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -235,6 +244,7 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "networking",
+ "protocol",
  "tokio",
 ]
 
